@@ -1,14 +1,55 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Construction } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { listCampaigns } from "@/lib/campaigns.functions";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
-export const Route = createFileRoute("/_app/analytics")({
-  component: () => (
-    <div className="mx-auto max-w-4xl p-6 md:p-10">
+export const Route = createFileRoute("/_app/analytics")({ component: Analytics });
+
+function pct(n: number, d: number) { return d > 0 ? Math.round((n / d) * 100) : 0; }
+
+function Analytics() {
+  const fn = useServerFn(listCampaigns);
+  const { data: items = [] } = useQuery({ queryKey: ["campaigns"], queryFn: () => fn() });
+
+  return (
+    <div className="mx-auto max-w-6xl p-6 md:p-10">
       <h1 className="font-display text-3xl font-bold">Analytics</h1>
-      <p className="text-sm text-muted-foreground">Opens, clicks, deliverability over time.</p>
-      <div className="mt-8 rounded-2xl border border-dashed border-border bg-card p-12 text-center">
-        <Construction className="mx-auto h-10 w-10 text-muted-foreground" />
+      <p className="text-sm text-muted-foreground">Open and click performance per campaign.</p>
+
+      <div className="mt-8 space-y-3">
+        {items.length === 0 && <Card><CardContent className="py-12 text-center text-muted-foreground">No campaigns yet.</CardContent></Card>}
+        {items.map((c: any) => (
+          <Card key={c.id} className="shadow-[var(--shadow-card)]">
+            <CardContent className="py-5">
+              <div className="flex items-center justify-between">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="truncate font-medium">{c.name}</h3>
+                    <Badge variant="secondary">{c.status}</Badge>
+                  </div>
+                  <p className="truncate text-sm text-muted-foreground">{c.subject}</p>
+                </div>
+                <div className="text-right text-xs text-muted-foreground">{new Date(c.created_at).toLocaleString()}</div>
+              </div>
+              <div className="mt-4 grid grid-cols-4 gap-3 text-center">
+                {[
+                  ["Sent", `${c.sent_count}/${c.total_recipients}`],
+                  ["Opens", `${c.open_count} (${pct(c.open_count, c.sent_count)}%)`],
+                  ["Clicks", `${c.click_count} (${pct(c.click_count, c.sent_count)}%)`],
+                  ["Failed", String(c.failed_count)],
+                ].map(([l, v]) => (
+                  <div key={l} className="rounded-lg bg-accent/40 p-3">
+                    <div className="text-xs text-muted-foreground">{l}</div>
+                    <div className="font-display text-lg font-semibold">{v}</div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
-  ),
-});
+  );
+}

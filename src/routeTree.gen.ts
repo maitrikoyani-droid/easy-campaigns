@@ -20,6 +20,9 @@ import { Route as AppListsRouteImport } from './routes/_app/lists'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppAnalyticsRouteImport } from './routes/_app/analytics'
 import { Route as AppCampaignsNewRouteImport } from './routes/_app/campaigns/new'
+import { Route as ApiPublicTrackClickRouteImport } from './routes/api/public/track/click'
+import { Route as ApiPublicHooksProcessCampaignsRouteImport } from './routes/api/public/hooks/process-campaigns'
+import { Route as ApiPublicTrackOpenIdRouteImport } from './routes/api/public/track/open.$id'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -75,6 +78,22 @@ const AppCampaignsNewRoute = AppCampaignsNewRouteImport.update({
   path: '/campaigns/new',
   getParentRoute: () => AppRoute,
 } as any)
+const ApiPublicTrackClickRoute = ApiPublicTrackClickRouteImport.update({
+  id: '/api/public/track/click',
+  path: '/api/public/track/click',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicHooksProcessCampaignsRoute =
+  ApiPublicHooksProcessCampaignsRouteImport.update({
+    id: '/api/public/hooks/process-campaigns',
+    path: '/api/public/hooks/process-campaigns',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicTrackOpenIdRoute = ApiPublicTrackOpenIdRouteImport.update({
+  id: '/api/public/track/open/$id',
+  path: '/api/public/track/open/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -87,6 +106,9 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AppSettingsRoute
   '/templates': typeof AppTemplatesRoute
   '/campaigns/new': typeof AppCampaignsNewRoute
+  '/api/public/hooks/process-campaigns': typeof ApiPublicHooksProcessCampaignsRoute
+  '/api/public/track/click': typeof ApiPublicTrackClickRoute
+  '/api/public/track/open/$id': typeof ApiPublicTrackOpenIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -99,6 +121,9 @@ export interface FileRoutesByTo {
   '/settings': typeof AppSettingsRoute
   '/templates': typeof AppTemplatesRoute
   '/campaigns/new': typeof AppCampaignsNewRoute
+  '/api/public/hooks/process-campaigns': typeof ApiPublicHooksProcessCampaignsRoute
+  '/api/public/track/click': typeof ApiPublicTrackClickRoute
+  '/api/public/track/open/$id': typeof ApiPublicTrackOpenIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -113,6 +138,9 @@ export interface FileRoutesById {
   '/_app/settings': typeof AppSettingsRoute
   '/_app/templates': typeof AppTemplatesRoute
   '/_app/campaigns/new': typeof AppCampaignsNewRoute
+  '/api/public/hooks/process-campaigns': typeof ApiPublicHooksProcessCampaignsRoute
+  '/api/public/track/click': typeof ApiPublicTrackClickRoute
+  '/api/public/track/open/$id': typeof ApiPublicTrackOpenIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -127,6 +155,9 @@ export interface FileRouteTypes {
     | '/settings'
     | '/templates'
     | '/campaigns/new'
+    | '/api/public/hooks/process-campaigns'
+    | '/api/public/track/click'
+    | '/api/public/track/open/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -139,6 +170,9 @@ export interface FileRouteTypes {
     | '/settings'
     | '/templates'
     | '/campaigns/new'
+    | '/api/public/hooks/process-campaigns'
+    | '/api/public/track/click'
+    | '/api/public/track/open/$id'
   id:
     | '__root__'
     | '/'
@@ -152,6 +186,9 @@ export interface FileRouteTypes {
     | '/_app/settings'
     | '/_app/templates'
     | '/_app/campaigns/new'
+    | '/api/public/hooks/process-campaigns'
+    | '/api/public/track/click'
+    | '/api/public/track/open/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -159,6 +196,9 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  ApiPublicHooksProcessCampaignsRoute: typeof ApiPublicHooksProcessCampaignsRoute
+  ApiPublicTrackClickRoute: typeof ApiPublicTrackClickRoute
+  ApiPublicTrackOpenIdRoute: typeof ApiPublicTrackOpenIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -240,6 +280,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCampaignsNewRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/public/track/click': {
+      id: '/api/public/track/click'
+      path: '/api/public/track/click'
+      fullPath: '/api/public/track/click'
+      preLoaderRoute: typeof ApiPublicTrackClickRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/process-campaigns': {
+      id: '/api/public/hooks/process-campaigns'
+      path: '/api/public/hooks/process-campaigns'
+      fullPath: '/api/public/hooks/process-campaigns'
+      preLoaderRoute: typeof ApiPublicHooksProcessCampaignsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/track/open/$id': {
+      id: '/api/public/track/open/$id'
+      path: '/api/public/track/open/$id'
+      fullPath: '/api/public/track/open/$id'
+      preLoaderRoute: typeof ApiPublicTrackOpenIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -270,6 +331,9 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  ApiPublicHooksProcessCampaignsRoute: ApiPublicHooksProcessCampaignsRoute,
+  ApiPublicTrackClickRoute: ApiPublicTrackClickRoute,
+  ApiPublicTrackOpenIdRoute: ApiPublicTrackOpenIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
