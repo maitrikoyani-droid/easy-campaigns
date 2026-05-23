@@ -13,7 +13,13 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppTemplatesRouteImport } from './routes/_app/templates'
+import { Route as AppSettingsRouteImport } from './routes/_app/settings'
+import { Route as AppScheduledRouteImport } from './routes/_app/scheduled'
+import { Route as AppListsRouteImport } from './routes/_app/lists'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
+import { Route as AppAnalyticsRouteImport } from './routes/_app/analytics'
+import { Route as AppCampaignsNewRouteImport } from './routes/_app/campaigns/new'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -34,9 +40,39 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppTemplatesRoute = AppTemplatesRouteImport.update({
+  id: '/templates',
+  path: '/templates',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppScheduledRoute = AppScheduledRouteImport.update({
+  id: '/scheduled',
+  path: '/scheduled',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppListsRoute = AppListsRouteImport.update({
+  id: '/lists',
+  path: '/lists',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAnalyticsRoute = AppAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCampaignsNewRoute = AppCampaignsNewRouteImport.update({
+  id: '/campaigns/new',
+  path: '/campaigns/new',
   getParentRoute: () => AppRoute,
 } as any)
 
@@ -44,13 +80,25 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/analytics': typeof AppAnalyticsRoute
   '/dashboard': typeof AppDashboardRoute
+  '/lists': typeof AppListsRoute
+  '/scheduled': typeof AppScheduledRoute
+  '/settings': typeof AppSettingsRoute
+  '/templates': typeof AppTemplatesRoute
+  '/campaigns/new': typeof AppCampaignsNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/analytics': typeof AppAnalyticsRoute
   '/dashboard': typeof AppDashboardRoute
+  '/lists': typeof AppListsRoute
+  '/scheduled': typeof AppScheduledRoute
+  '/settings': typeof AppSettingsRoute
+  '/templates': typeof AppTemplatesRoute
+  '/campaigns/new': typeof AppCampaignsNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -58,14 +106,52 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/_app/analytics': typeof AppAnalyticsRoute
   '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/lists': typeof AppListsRoute
+  '/_app/scheduled': typeof AppScheduledRoute
+  '/_app/settings': typeof AppSettingsRoute
+  '/_app/templates': typeof AppTemplatesRoute
+  '/_app/campaigns/new': typeof AppCampaignsNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/signup' | '/dashboard'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/signup'
+    | '/analytics'
+    | '/dashboard'
+    | '/lists'
+    | '/scheduled'
+    | '/settings'
+    | '/templates'
+    | '/campaigns/new'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/signup' | '/dashboard'
-  id: '__root__' | '/' | '/_app' | '/login' | '/signup' | '/_app/dashboard'
+  to:
+    | '/'
+    | '/login'
+    | '/signup'
+    | '/analytics'
+    | '/dashboard'
+    | '/lists'
+    | '/scheduled'
+    | '/settings'
+    | '/templates'
+    | '/campaigns/new'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/login'
+    | '/signup'
+    | '/_app/analytics'
+    | '/_app/dashboard'
+    | '/_app/lists'
+    | '/_app/scheduled'
+    | '/_app/settings'
+    | '/_app/templates'
+    | '/_app/campaigns/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -105,6 +191,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/templates': {
+      id: '/_app/templates'
+      path: '/templates'
+      fullPath: '/templates'
+      preLoaderRoute: typeof AppTemplatesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/scheduled': {
+      id: '/_app/scheduled'
+      path: '/scheduled'
+      fullPath: '/scheduled'
+      preLoaderRoute: typeof AppScheduledRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/lists': {
+      id: '/_app/lists'
+      path: '/lists'
+      fullPath: '/lists'
+      preLoaderRoute: typeof AppListsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/dashboard': {
       id: '/_app/dashboard'
       path: '/dashboard'
@@ -112,15 +226,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/analytics': {
+      id: '/_app/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AppAnalyticsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/campaigns/new': {
+      id: '/_app/campaigns/new'
+      path: '/campaigns/new'
+      fullPath: '/campaigns/new'
+      preLoaderRoute: typeof AppCampaignsNewRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
+  AppAnalyticsRoute: typeof AppAnalyticsRoute
   AppDashboardRoute: typeof AppDashboardRoute
+  AppListsRoute: typeof AppListsRoute
+  AppScheduledRoute: typeof AppScheduledRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+  AppTemplatesRoute: typeof AppTemplatesRoute
+  AppCampaignsNewRoute: typeof AppCampaignsNewRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAnalyticsRoute: AppAnalyticsRoute,
   AppDashboardRoute: AppDashboardRoute,
+  AppListsRoute: AppListsRoute,
+  AppScheduledRoute: AppScheduledRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  AppTemplatesRoute: AppTemplatesRoute,
+  AppCampaignsNewRoute: AppCampaignsNewRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
