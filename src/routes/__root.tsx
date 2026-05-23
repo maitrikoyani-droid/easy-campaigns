@@ -20,6 +20,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Mailwave — Smart Bulk Email Sender" },
       { name: "description", content: "Send personalized bulk emails with throttling, scheduling, and tracking. Built for small teams." },
+      { property: "og:title", content: "Mailwave — Smart Bulk Email Sender" },
+      { name: "twitter:title", content: "Mailwave — Smart Bulk Email Sender" },
+      { property: "og:description", content: "Send personalized bulk emails with throttling, scheduling, and tracking. Built for small teams." },
+      { name: "twitter:description", content: "Send personalized bulk emails with throttling, scheduling, and tracking. Built for small teams." },
+      { name: "twitter:card", content: "summary" },
+      { property: "og:type", content: "website" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
