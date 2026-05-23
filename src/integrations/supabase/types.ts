@@ -14,7 +14,353 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      campaign_recipients: {
+        Row: {
+          campaign_id: string
+          clicks: number
+          company: string | null
+          created_at: string
+          email: string
+          error_message: string | null
+          id: string
+          name: string | null
+          opens: number
+          sent_at: string | null
+          status: Database["public"]["Enums"]["campaign_recipient_status"]
+          tracking_id: string
+          user_id: string
+        }
+        Insert: {
+          campaign_id: string
+          clicks?: number
+          company?: string | null
+          created_at?: string
+          email: string
+          error_message?: string | null
+          id?: string
+          name?: string | null
+          opens?: number
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["campaign_recipient_status"]
+          tracking_id?: string
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string
+          clicks?: number
+          company?: string | null
+          created_at?: string
+          email?: string
+          error_message?: string | null
+          id?: string
+          name?: string | null
+          opens?: number
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["campaign_recipient_status"]
+          tracking_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_recipients_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaigns: {
+        Row: {
+          batch_delay_seconds: number
+          batch_size: number
+          click_count: number
+          created_at: string
+          failed_count: number
+          from_name: string | null
+          html: string
+          id: string
+          last_batch_at: string | null
+          list_id: string | null
+          name: string
+          open_count: number
+          reply_to: string | null
+          scheduled_at: string | null
+          sent_count: number
+          status: Database["public"]["Enums"]["campaign_status"]
+          subject: string
+          timezone: string | null
+          total_recipients: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          batch_delay_seconds?: number
+          batch_size?: number
+          click_count?: number
+          created_at?: string
+          failed_count?: number
+          from_name?: string | null
+          html: string
+          id?: string
+          last_batch_at?: string | null
+          list_id?: string | null
+          name: string
+          open_count?: number
+          reply_to?: string | null
+          scheduled_at?: string | null
+          sent_count?: number
+          status?: Database["public"]["Enums"]["campaign_status"]
+          subject: string
+          timezone?: string | null
+          total_recipients?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          batch_delay_seconds?: number
+          batch_size?: number
+          click_count?: number
+          created_at?: string
+          failed_count?: number
+          from_name?: string | null
+          html?: string
+          id?: string
+          last_batch_at?: string | null
+          list_id?: string | null
+          name?: string
+          open_count?: number
+          reply_to?: string | null
+          scheduled_at?: string | null
+          sent_count?: number
+          status?: Database["public"]["Enums"]["campaign_status"]
+          subject?: string
+          timezone?: string | null
+          total_recipients?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "recipient_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_events: {
+        Row: {
+          campaign_id: string
+          campaign_recipient_id: string
+          created_at: string
+          event_type: string
+          id: string
+          ip: string | null
+          url: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          campaign_id: string
+          campaign_recipient_id: string
+          created_at?: string
+          event_type: string
+          id?: string
+          ip?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string
+          campaign_recipient_id?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_events_campaign_recipient_id_fkey"
+            columns: ["campaign_recipient_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_recipients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          reply_to: string | null
+          sender_name: string | null
+          signature: string | null
+          timezone: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id: string
+          reply_to?: string | null
+          sender_name?: string | null
+          signature?: string | null
+          timezone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          reply_to?: string | null
+          sender_name?: string | null
+          signature?: string | null
+          timezone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      recipient_lists: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      recipients: {
+        Row: {
+          company: string | null
+          created_at: string
+          custom_fields: Json | null
+          email: string
+          id: string
+          is_valid: boolean | null
+          list_id: string
+          name: string | null
+          user_id: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          custom_fields?: Json | null
+          email: string
+          id?: string
+          is_valid?: boolean | null
+          list_id: string
+          name?: string | null
+          user_id: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          custom_fields?: Json | null
+          email?: string
+          id?: string
+          is_valid?: boolean | null
+          list_id?: string
+          name?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipients_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "recipient_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      smtp_settings: {
+        Row: {
+          from_email: string
+          from_name: string | null
+          host: string
+          password: string
+          port: number
+          provider: string
+          secure: boolean
+          updated_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          from_email: string
+          from_name?: string | null
+          host: string
+          password: string
+          port?: number
+          provider?: string
+          secure?: boolean
+          updated_at?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          from_email?: string
+          from_name?: string | null
+          host?: string
+          password?: string
+          port?: number
+          provider?: string
+          secure?: boolean
+          updated_at?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      templates: {
+        Row: {
+          created_at: string
+          html: string | null
+          id: string
+          name: string
+          subject: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          html?: string | null
+          id?: string
+          name: string
+          subject?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          html?: string | null
+          id?: string
+          name?: string
+          subject?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +369,14 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      campaign_recipient_status: "queued" | "sending" | "sent" | "failed"
+      campaign_status:
+        | "draft"
+        | "scheduled"
+        | "sending"
+        | "sent"
+        | "paused"
+        | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +503,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      campaign_recipient_status: ["queued", "sending", "sent", "failed"],
+      campaign_status: [
+        "draft",
+        "scheduled",
+        "sending",
+        "sent",
+        "paused",
+        "failed",
+      ],
+    },
   },
 } as const
