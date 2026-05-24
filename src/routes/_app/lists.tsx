@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useRef, useState } from "react";
@@ -10,8 +10,10 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { listLists, createList, deleteList } from "@/lib/lists.functions";
-import { Upload, Users, Trash2, Plus, FileSpreadsheet } from "lucide-react";
+import { Upload, Users, Trash2, Plus, FileSpreadsheet, ArrowRight, X } from "lucide-react";
 
 export const Route = createFileRoute("/_app/lists")({ component: ListsPage });
 
@@ -141,8 +143,40 @@ function ListsPage() {
               </div>
 
               {recipients.length > 0 && (
-                <div className="rounded-lg bg-accent/50 p-3 text-sm">
-                  <strong>{recipients.length}</strong> recipients ready
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span><strong>{recipients.length}</strong> recipients ready ·{" "}
+                      <span className="text-success">{recipients.filter(r => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.email)).length} valid</span>
+                    </span>
+                    <Button variant="ghost" size="sm" onClick={() => setRecipients([])}>Clear</Button>
+                  </div>
+                  <div className="max-h-64 overflow-auto rounded-lg border border-border">
+                    <Table>
+                      <TableHeader><TableRow>
+                        <TableHead>Email</TableHead><TableHead>Name</TableHead><TableHead>Company</TableHead>
+                        <TableHead className="w-20">Status</TableHead><TableHead className="w-10"></TableHead>
+                      </TableRow></TableHeader>
+                      <TableBody>
+                        {recipients.slice(0, 200).map((r, i) => {
+                          const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.email);
+                          return (
+                            <TableRow key={i}>
+                              <TableCell className="font-mono text-xs">{r.email}</TableCell>
+                              <TableCell className="text-sm">{r.name || "—"}</TableCell>
+                              <TableCell className="text-sm">{r.company || "—"}</TableCell>
+                              <TableCell>{valid ? <Badge className="bg-success/15 text-success">Valid</Badge> : <Badge variant="destructive">Invalid</Badge>}</TableCell>
+                              <TableCell>
+                                <Button variant="ghost" size="icon" onClick={() => setRecipients(recipients.filter((_, idx) => idx !== i))}>
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  {recipients.length > 200 && <p className="text-xs text-muted-foreground">Showing first 200 of {recipients.length}.</p>}
                 </div>
               )}
             </div>
