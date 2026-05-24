@@ -40,6 +40,11 @@ function TemplatesPage() {
     mutationFn: (id: string) => fnDel({ data: { id } }),
     onSuccess: () => { toast.success("Deleted"); qc.invalidateQueries({ queryKey: ["templates"] }); },
   });
+  const dup = useMutation({
+    mutationFn: (id: string) => fnDup({ data: { id } }),
+    onSuccess: () => { toast.success("Duplicated"); qc.invalidateQueries({ queryKey: ["templates"] }); },
+    onError: (e: any) => toast.error(e.message),
+  });
 
   return (
     <div className="mx-auto max-w-6xl p-6 md:p-10">
@@ -63,9 +68,10 @@ function TemplatesPage() {
               </CardTitle>
               <CardDescription className="truncate">{t.subject}</CardDescription>
             </CardHeader>
-            <CardContent className="flex justify-end gap-2">
-              <Button variant="ghost" size="sm" onClick={() => start(t)}><Edit2 className="h-4 w-4" /></Button>
-              <Button variant="ghost" size="sm" onClick={() => confirm("Delete?") && del.mutate(t.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+            <CardContent className="flex justify-end gap-1">
+              <Button variant="ghost" size="sm" onClick={() => start(t)} title="Edit"><Edit2 className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="sm" onClick={() => dup.mutate(t.id)} title="Duplicate"><Copy className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="sm" onClick={() => confirm("Delete?") && del.mutate(t.id)} title="Delete"><Trash2 className="h-4 w-4 text-destructive" /></Button>
             </CardContent>
           </Card>
         ))}
