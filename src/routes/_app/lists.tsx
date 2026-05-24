@@ -202,12 +202,15 @@ function ListsPage() {
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>
               </CardTitle>
-              {l.description && <CardDescription>{l.description}</CardDescription>}
+              {l.description && <CardDescription className="line-clamp-2">{l.description}</CardDescription>}
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Users className="h-4 w-4" /> {l.count} recipients
               </div>
+              <Link to="/lists/$id" params={{ id: l.id }}>
+                <Button variant="ghost" size="sm">Open <ArrowRight className="ml-1 h-3 w-3" /></Button>
+              </Link>
             </CardContent>
           </Card>
         ))}

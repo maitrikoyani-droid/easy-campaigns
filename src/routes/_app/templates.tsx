@@ -9,8 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { listTemplates, saveTemplate, deleteTemplate } from "@/lib/templates.functions";
-import { FileText, Plus, Trash2, Edit2 } from "lucide-react";
+import { listTemplates, saveTemplate, deleteTemplate, duplicateTemplate } from "@/lib/templates.functions";
+import { FileText, Plus, Trash2, Edit2, Copy } from "lucide-react";
 
 export const Route = createFileRoute("/_app/templates")({ component: TemplatesPage });
 
@@ -19,6 +19,7 @@ function TemplatesPage() {
   const fnList = useServerFn(listTemplates);
   const fnSave = useServerFn(saveTemplate);
   const fnDel = useServerFn(deleteTemplate);
+  const fnDup = useServerFn(duplicateTemplate);
   const { data: items = [] } = useQuery({ queryKey: ["templates"], queryFn: () => fnList() });
 
   const [open, setOpen] = useState(false);
