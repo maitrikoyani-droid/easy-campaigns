@@ -121,3 +121,23 @@ export const cancelCampaign = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+export const getCampaignAnalytics = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: campaign } = await supabase.from("campaigns")
+      .select("id, name, subject, status, sent_count, total_recipients, open_count, click_count, failed_count, created_at")
+      .eq("id", data.id).eq("user_id", userId).maybeSingle();
+    if (!campaign) throw new Error("Campaign not found");
+    const { data: recipients } = await supabase.from("campaign_recipients")
+      .select("id, email, name, status, opens, clicks, sent_at, error_message")
+      .eq("campaign_id", data.id).eq("user_id", userId)
+      .order("sent_at", { ascending: false, nullsFirst: false }).limit(2000);
+    const { data: events } = await supabase.from("email_events")
+      .select("campaign_recipient_id, event_type, url, created_at")
+      .eq("campaign_id", data.id).eq("user_id", userId)
+      .order("created_at", { ascending: false }).limit(5000);
+    return { campaign, recipients: recipients ?? [], events: events ?? [] };
+  });

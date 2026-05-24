@@ -9,8 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { listTemplates, saveTemplate, deleteTemplate } from "@/lib/templates.functions";
-import { FileText, Plus, Trash2, Edit2 } from "lucide-react";
+import { listTemplates, saveTemplate, deleteTemplate, duplicateTemplate } from "@/lib/templates.functions";
+import { FileText, Plus, Trash2, Edit2, Copy } from "lucide-react";
 
 export const Route = createFileRoute("/_app/templates")({ component: TemplatesPage });
 
@@ -19,6 +19,7 @@ function TemplatesPage() {
   const fnList = useServerFn(listTemplates);
   const fnSave = useServerFn(saveTemplate);
   const fnDel = useServerFn(deleteTemplate);
+  const fnDup = useServerFn(duplicateTemplate);
   const { data: items = [] } = useQuery({ queryKey: ["templates"], queryFn: () => fnList() });
 
   const [open, setOpen] = useState(false);
@@ -38,6 +39,11 @@ function TemplatesPage() {
   const del = useMutation({
     mutationFn: (id: string) => fnDel({ data: { id } }),
     onSuccess: () => { toast.success("Deleted"); qc.invalidateQueries({ queryKey: ["templates"] }); },
+  });
+  const dup = useMutation({
+    mutationFn: (id: string) => fnDup({ data: { id } }),
+    onSuccess: () => { toast.success("Duplicated"); qc.invalidateQueries({ queryKey: ["templates"] }); },
+    onError: (e: any) => toast.error(e.message),
   });
 
   return (
@@ -62,9 +68,10 @@ function TemplatesPage() {
               </CardTitle>
               <CardDescription className="truncate">{t.subject}</CardDescription>
             </CardHeader>
-            <CardContent className="flex justify-end gap-2">
-              <Button variant="ghost" size="sm" onClick={() => start(t)}><Edit2 className="h-4 w-4" /></Button>
-              <Button variant="ghost" size="sm" onClick={() => confirm("Delete?") && del.mutate(t.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+            <CardContent className="flex justify-end gap-1">
+              <Button variant="ghost" size="sm" onClick={() => start(t)} title="Edit"><Edit2 className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="sm" onClick={() => dup.mutate(t.id)} title="Duplicate"><Copy className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="sm" onClick={() => confirm("Delete?") && del.mutate(t.id)} title="Delete"><Trash2 className="h-4 w-4 text-destructive" /></Button>
             </CardContent>
           </Card>
         ))}

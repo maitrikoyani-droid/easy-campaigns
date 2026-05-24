@@ -19,7 +19,9 @@ import { Route as AppScheduledRouteImport } from './routes/_app/scheduled'
 import { Route as AppListsRouteImport } from './routes/_app/lists'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppAnalyticsRouteImport } from './routes/_app/analytics'
+import { Route as AppListsIdRouteImport } from './routes/_app/lists.$id'
 import { Route as AppCampaignsNewRouteImport } from './routes/_app/campaigns/new'
+import { Route as AppAnalyticsIdRouteImport } from './routes/_app/analytics.$id'
 import { Route as ApiPublicTrackClickRouteImport } from './routes/api/public/track/click'
 import { Route as ApiPublicHooksProcessCampaignsRouteImport } from './routes/api/public/hooks/process-campaigns'
 import { Route as ApiPublicTrackOpenIdRouteImport } from './routes/api/public/track/open.$id'
@@ -73,10 +75,20 @@ const AppAnalyticsRoute = AppAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => AppRoute,
 } as any)
+const AppListsIdRoute = AppListsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AppListsRoute,
+} as any)
 const AppCampaignsNewRoute = AppCampaignsNewRouteImport.update({
   id: '/campaigns/new',
   path: '/campaigns/new',
   getParentRoute: () => AppRoute,
+} as any)
+const AppAnalyticsIdRoute = AppAnalyticsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AppAnalyticsRoute,
 } as any)
 const ApiPublicTrackClickRoute = ApiPublicTrackClickRouteImport.update({
   id: '/api/public/track/click',
@@ -99,13 +111,15 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/analytics': typeof AppAnalyticsRoute
+  '/analytics': typeof AppAnalyticsRouteWithChildren
   '/dashboard': typeof AppDashboardRoute
-  '/lists': typeof AppListsRoute
+  '/lists': typeof AppListsRouteWithChildren
   '/scheduled': typeof AppScheduledRoute
   '/settings': typeof AppSettingsRoute
   '/templates': typeof AppTemplatesRoute
+  '/analytics/$id': typeof AppAnalyticsIdRoute
   '/campaigns/new': typeof AppCampaignsNewRoute
+  '/lists/$id': typeof AppListsIdRoute
   '/api/public/hooks/process-campaigns': typeof ApiPublicHooksProcessCampaignsRoute
   '/api/public/track/click': typeof ApiPublicTrackClickRoute
   '/api/public/track/open/$id': typeof ApiPublicTrackOpenIdRoute
@@ -114,13 +128,15 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/analytics': typeof AppAnalyticsRoute
+  '/analytics': typeof AppAnalyticsRouteWithChildren
   '/dashboard': typeof AppDashboardRoute
-  '/lists': typeof AppListsRoute
+  '/lists': typeof AppListsRouteWithChildren
   '/scheduled': typeof AppScheduledRoute
   '/settings': typeof AppSettingsRoute
   '/templates': typeof AppTemplatesRoute
+  '/analytics/$id': typeof AppAnalyticsIdRoute
   '/campaigns/new': typeof AppCampaignsNewRoute
+  '/lists/$id': typeof AppListsIdRoute
   '/api/public/hooks/process-campaigns': typeof ApiPublicHooksProcessCampaignsRoute
   '/api/public/track/click': typeof ApiPublicTrackClickRoute
   '/api/public/track/open/$id': typeof ApiPublicTrackOpenIdRoute
@@ -131,13 +147,15 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/_app/analytics': typeof AppAnalyticsRoute
+  '/_app/analytics': typeof AppAnalyticsRouteWithChildren
   '/_app/dashboard': typeof AppDashboardRoute
-  '/_app/lists': typeof AppListsRoute
+  '/_app/lists': typeof AppListsRouteWithChildren
   '/_app/scheduled': typeof AppScheduledRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/templates': typeof AppTemplatesRoute
+  '/_app/analytics/$id': typeof AppAnalyticsIdRoute
   '/_app/campaigns/new': typeof AppCampaignsNewRoute
+  '/_app/lists/$id': typeof AppListsIdRoute
   '/api/public/hooks/process-campaigns': typeof ApiPublicHooksProcessCampaignsRoute
   '/api/public/track/click': typeof ApiPublicTrackClickRoute
   '/api/public/track/open/$id': typeof ApiPublicTrackOpenIdRoute
@@ -154,7 +172,9 @@ export interface FileRouteTypes {
     | '/scheduled'
     | '/settings'
     | '/templates'
+    | '/analytics/$id'
     | '/campaigns/new'
+    | '/lists/$id'
     | '/api/public/hooks/process-campaigns'
     | '/api/public/track/click'
     | '/api/public/track/open/$id'
@@ -169,7 +189,9 @@ export interface FileRouteTypes {
     | '/scheduled'
     | '/settings'
     | '/templates'
+    | '/analytics/$id'
     | '/campaigns/new'
+    | '/lists/$id'
     | '/api/public/hooks/process-campaigns'
     | '/api/public/track/click'
     | '/api/public/track/open/$id'
@@ -185,7 +207,9 @@ export interface FileRouteTypes {
     | '/_app/scheduled'
     | '/_app/settings'
     | '/_app/templates'
+    | '/_app/analytics/$id'
     | '/_app/campaigns/new'
+    | '/_app/lists/$id'
     | '/api/public/hooks/process-campaigns'
     | '/api/public/track/click'
     | '/api/public/track/open/$id'
@@ -273,12 +297,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAnalyticsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/lists/$id': {
+      id: '/_app/lists/$id'
+      path: '/$id'
+      fullPath: '/lists/$id'
+      preLoaderRoute: typeof AppListsIdRouteImport
+      parentRoute: typeof AppListsRoute
+    }
     '/_app/campaigns/new': {
       id: '/_app/campaigns/new'
       path: '/campaigns/new'
       fullPath: '/campaigns/new'
       preLoaderRoute: typeof AppCampaignsNewRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/_app/analytics/$id': {
+      id: '/_app/analytics/$id'
+      path: '/$id'
+      fullPath: '/analytics/$id'
+      preLoaderRoute: typeof AppAnalyticsIdRouteImport
+      parentRoute: typeof AppAnalyticsRoute
     }
     '/api/public/track/click': {
       id: '/api/public/track/click'
@@ -304,10 +342,34 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AppAnalyticsRouteChildren {
+  AppAnalyticsIdRoute: typeof AppAnalyticsIdRoute
+}
+
+const AppAnalyticsRouteChildren: AppAnalyticsRouteChildren = {
+  AppAnalyticsIdRoute: AppAnalyticsIdRoute,
+}
+
+const AppAnalyticsRouteWithChildren = AppAnalyticsRoute._addFileChildren(
+  AppAnalyticsRouteChildren,
+)
+
+interface AppListsRouteChildren {
+  AppListsIdRoute: typeof AppListsIdRoute
+}
+
+const AppListsRouteChildren: AppListsRouteChildren = {
+  AppListsIdRoute: AppListsIdRoute,
+}
+
+const AppListsRouteWithChildren = AppListsRoute._addFileChildren(
+  AppListsRouteChildren,
+)
+
 interface AppRouteChildren {
-  AppAnalyticsRoute: typeof AppAnalyticsRoute
+  AppAnalyticsRoute: typeof AppAnalyticsRouteWithChildren
   AppDashboardRoute: typeof AppDashboardRoute
-  AppListsRoute: typeof AppListsRoute
+  AppListsRoute: typeof AppListsRouteWithChildren
   AppScheduledRoute: typeof AppScheduledRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppTemplatesRoute: typeof AppTemplatesRoute
@@ -315,9 +377,9 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppAnalyticsRoute: AppAnalyticsRoute,
+  AppAnalyticsRoute: AppAnalyticsRouteWithChildren,
   AppDashboardRoute: AppDashboardRoute,
-  AppListsRoute: AppListsRoute,
+  AppListsRoute: AppListsRouteWithChildren,
   AppScheduledRoute: AppScheduledRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppTemplatesRoute: AppTemplatesRoute,

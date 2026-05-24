@@ -2,6 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export const listLists = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -33,7 +35,7 @@ export const getList = createServerFn({ method: "GET" })
     if (!list) throw new Error("List not found");
     const { data: recipients } = await supabase
       .from("recipients").select("id, email, name, company, custom_fields, created_at")
-      .eq("list_id", data.id).order("created_at", { ascending: false }).limit(500);
+      .eq("list_id", data.id).order("created_at", { ascending: true }).limit(2000);
     return { list, recipients: recipients ?? [] };
   });
 
@@ -71,7 +73,6 @@ export const createList = createServerFn({ method: "POST" })
           email: r.email.toLowerCase(), name: r.name || null, company: r.company || null,
           custom_fields: r.custom_fields || {},
         }));
-      // chunk to avoid request size limits
       for (let i = 0; i < rows.length; i += 500) {
         const { error: insErr } = await supabase.from("recipients").insert(rows.slice(i, i + 500));
         if (insErr) throw new Error(insErr.message);
@@ -90,3 +91,53 @@ export const deleteList = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+export const addRecipient = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({
+    list_id: z.string().uuid(),
+    email: z.string().email().max(255),
+    name: z.string().max(255).optional().nullable(),
+    company: z.string().max(255).optional().nullable(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: list } = await supabase.from("recipient_lists")
+      .select("id").eq("id", data.list_id).eq("user_id", userId).maybeSingle();
+    if (!list) throw new Error("List not found");
+    const { data: row, error } = await supabase.from("recipients").insert({
+      user_id: userId, list_id: data.list_id,
+      email: data.email.toLowerCase(), name: data.name || null, company: data.company || null,
+    }).select("id").single();
+    if (error || !row) throw new Error(error?.message || "Failed");
+    return { id: row.id };
+  });
+
+export const updateRecipient = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({
+    id: z.string().uuid(),
+    email: z.string().email().max(255),
+    name: z.string().max(255).optional().nullable(),
+    company: z.string().max(255).optional().nullable(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { error } = await supabase.from("recipients").update({
+      email: data.email.toLowerCase(), name: data.name || null, company: data.company || null,
+    }).eq("id", data.id).eq("user_id", userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const deleteRecipient = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { error } = await supabase.from("recipients").delete().eq("id", data.id).eq("user_id", userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export { EMAIL_RE };
