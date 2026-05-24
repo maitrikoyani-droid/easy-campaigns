@@ -47,3 +47,18 @@ export const deleteTemplate = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+export const duplicateTemplate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: t } = await supabase.from("templates").select("name, subject, html")
+      .eq("id", data.id).eq("user_id", userId).maybeSingle();
+    if (!t) throw new Error("Template not found");
+    const { data: row, error } = await supabase.from("templates").insert({
+      user_id: userId, name: `${t.name} (copy)`, subject: t.subject, html: t.html,
+    }).select("id").single();
+    if (error || !row) throw new Error(error?.message || "Failed");
+    return { id: row.id };
+  });
