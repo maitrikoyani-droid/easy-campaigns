@@ -79,6 +79,21 @@ export async function sendCampaignBatch(campaignId: string) {
   const from = `"${fromName}" <${smtp.from_email}>`;
   const replyTo = campaign.reply_to || smtp.from_email;
 
+  // Pre-load attachments once per batch
+  const attachmentMeta = (Array.isArray(campaign.attachments) ? campaign.attachments : []) as Array<{ path: string; filename: string; contentType?: string | null }>;
+  const attachments: Array<{ filename: string; content: Buffer; contentType?: string }> = [];
+  for (const a of attachmentMeta) {
+    try {
+      const { data: file } = await supabaseAdmin.storage.from("attachments").download(a.path);
+      if (file) {
+        const buf = Buffer.from(await file.arrayBuffer());
+        attachments.push({ filename: a.filename, content: buf, contentType: a.contentType || undefined });
+      }
+    } catch (e) {
+      console.error("attachment load failed", a.path, e);
+    }
+  }
+
   let sent = 0;
   let failed = 0;
   for (const r of batch) {
@@ -86,7 +101,7 @@ export async function sendCampaignBatch(campaignId: string) {
     const subject = personalize(campaign.subject, vars);
     const html = injectTracking(personalize(campaign.html, vars), r.tracking_id, campaignId);
     try {
-      await transporter.sendMail({ from, to: r.email, subject, html, replyTo });
+      await transporter.sendMail({ from, to: r.email, subject, html, replyTo, attachments });
       await supabaseAdmin
         .from("campaign_recipients")
         .update({ status: "sent", sent_at: new Date().toISOString() })

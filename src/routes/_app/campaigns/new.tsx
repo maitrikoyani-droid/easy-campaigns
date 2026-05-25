@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,10 +10,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Progress } from "@/components/ui/progress";
 import { listLists } from "@/lib/lists.functions";
 import { listTemplates } from "@/lib/templates.functions";
 import { createCampaign, checkSpamWords } from "@/lib/campaigns.functions";
-import { AlertTriangle, Send, CalendarClock, Eye } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { AlertTriangle, Send, CalendarClock, Eye, Paperclip, Upload, X, FileText, FileSpreadsheet, FileArchive, Image as ImageIcon, File as FileIcon } from "lucide-react";
 
 export const Route = createFileRoute("/_app/campaigns/new")({ component: NewCampaign });
 
@@ -36,6 +38,71 @@ function NewCampaign() {
   const [spam, setSpam] = useState<string[]>([]);
   const [preview, setPreview] = useState(false);
 
+  type Att = { path: string; filename: string; size: number; contentType?: string | null };
+  const [atts, setAtts] = useState<Att[]>([]);
+  const [uploads, setUploads] = useState<Record<string, { name: string; progress: number; error?: string }>>({});
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const ALLOWED = useMemo(() => new Set([
+    "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "zip", "png", "jpg", "jpeg",
+  ]), []);
+  const MAX_FILE = 25 * 1024 * 1024;
+
+  const handleFiles = async (files: FileList | File[]) => {
+    const list = Array.from(files);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { toast.error("Not signed in"); return; }
+    for (const file of list) {
+      const ext = (file.name.split(".").pop() || "").toLowerCase();
+      if (!ALLOWED.has(ext)) { toast.error(`${file.name}: file type not allowed`); continue; }
+      if (file.size > MAX_FILE) { toast.error(`${file.name}: exceeds 25MB`); continue; }
+      const key = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const path = `${user.id}/drafts/${key}-${file.name}`;
+      setUploads((u) => ({ ...u, [key]: { name: file.name, progress: 10 } }));
+      try {
+        // simulate progress while upload runs (supabase-js has no native progress)
+        const tick = setInterval(() => {
+          setUploads((u) => u[key] ? { ...u, [key]: { ...u[key], progress: Math.min(90, u[key].progress + 10) } } : u);
+        }, 150);
+        const { error } = await supabase.storage.from("attachments").upload(path, file, {
+          contentType: file.type || undefined, upsert: false,
+        });
+        clearInterval(tick);
+        if (error) throw error;
+        setUploads((u) => ({ ...u, [key]: { ...u[key], progress: 100 } }));
+        setAtts((a) => [...a, { path, filename: file.name, size: file.size, contentType: file.type || null }]);
+        setTimeout(() => setUploads((u) => { const n = { ...u }; delete n[key]; return n; }), 600);
+      } catch (e: any) {
+        setUploads((u) => ({ ...u, [key]: { ...u[key], progress: 0, error: e.message || "upload failed" } }));
+        toast.error(`${file.name}: ${e.message || "upload failed"}`);
+      }
+    }
+  };
+
+  const removeAtt = async (a: Att) => {
+    setAtts((arr) => arr.filter((x) => x.path !== a.path));
+    try { await supabase.storage.from("attachments").remove([a.path]); } catch {}
+  };
+
+  const create = useMutation({
+    mutationFn: () => fnCreate({
+      data: {
+        ...form,
+        scheduled_at: mode === "later" && form.scheduled_at ? new Date(form.scheduled_at).toISOString() : null,
+        send_now: mode === "now",
+        attachments: atts,
+      },
+    }),
+    onSuccess: (r) => {
+      toast.success(mode === "now" ? "Sending started!" : "Campaign scheduled");
+      router.navigate({ to: r.status === "scheduled" ? "/scheduled" : "/dashboard" });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const fmtSize = (b: number) => b < 1024 ? `${b} B` : b < 1024 * 1024 ? `${(b / 1024).toFixed(1)} KB` : `${(b / 1024 / 1024).toFixed(2)} MB`;
+
   useEffect(() => {
     const id = setTimeout(async () => {
       if (!form.subject && !form.html) return;
@@ -51,21 +118,14 @@ function NewCampaign() {
     const t = templates.find((x: any) => x.id === id);
     if (t) setForm((f) => ({ ...f, subject: t.subject || f.subject, html: t.html || f.html, name: f.name || t.name }));
   };
-
-  const create = useMutation({
-    mutationFn: () => fnCreate({
-      data: {
-        ...form,
-        scheduled_at: mode === "later" && form.scheduled_at ? new Date(form.scheduled_at).toISOString() : null,
-        send_now: mode === "now",
-      },
-    }),
-    onSuccess: (r) => {
-      toast.success(mode === "now" ? "Sending started!" : "Campaign scheduled");
-      router.navigate({ to: r.status === "scheduled" ? "/scheduled" : "/dashboard" });
-    },
-    onError: (e: any) => toast.error(e.message),
-  });
+  const iconFor = (name: string) => {
+    const ext = (name.split(".").pop() || "").toLowerCase();
+    if (["png", "jpg", "jpeg"].includes(ext)) return ImageIcon;
+    if (["xls", "xlsx"].includes(ext)) return FileSpreadsheet;
+    if (ext === "zip") return FileArchive;
+    if (["pdf", "doc", "docx", "ppt", "pptx", "txt"].includes(ext)) return FileText;
+    return FileIcon;
+  };
 
   const previewHtml = form.html
     .replace(/\{\{\s*name\s*\}\}/g, "Alex")
@@ -122,9 +182,69 @@ function NewCampaign() {
                   </div>
                 </div>
               )}
+
+              <div>
+                <div className="mb-2 flex items-center justify-between">
+                  <Label className="flex items-center gap-2"><Paperclip className="h-4 w-4" /> Attachments</Label>
+                  <span className="text-xs text-muted-foreground">PDF, DOC, XLS, PPT, TXT, ZIP, PNG/JPG · 25MB each</span>
+                </div>
+                <div
+                  onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={(e) => {
+                    e.preventDefault(); setDragOver(false);
+                    if (e.dataTransfer.files?.length) handleFiles(e.dataTransfer.files);
+                  }}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-center transition ${dragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-muted/50"}`}
+                >
+                  <Upload className="h-6 w-6 text-muted-foreground" />
+                  <div className="text-sm"><span className="font-medium text-foreground">Click to upload</span> or drag and drop</div>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  className="hidden"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.png,.jpg,.jpeg"
+                  onChange={(e) => { if (e.target.files) handleFiles(e.target.files); e.currentTarget.value = ""; }}
+                />
+
+                {(atts.length > 0 || Object.keys(uploads).length > 0) && (
+                  <ul className="mt-3 space-y-2">
+                    {Object.entries(uploads).map(([k, u]) => (
+                      <li key={k} className="rounded-md border border-border bg-muted/30 p-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="truncate">{u.name}</span>
+                          <span className="text-muted-foreground">{u.error ? "Failed" : `${u.progress}%`}</span>
+                        </div>
+                        <Progress value={u.progress} className="mt-1 h-1" />
+                      </li>
+                    ))}
+                    {atts.map((a) => {
+                      const Icon = iconFor(a.filename);
+                      return (
+                        <li key={a.path} className="flex items-center justify-between rounded-md border border-border bg-card p-2">
+                          <div className="flex min-w-0 items-center gap-2">
+                            <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                            <div className="min-w-0">
+                              <div className="truncate text-sm">{a.filename}</div>
+                              <div className="text-xs text-muted-foreground">{fmtSize(a.size)}</div>
+                            </div>
+                          </div>
+                          <Button type="button" variant="ghost" size="sm" onClick={() => removeAtt(a)}>
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
+
 
         <div className="space-y-6">
           <Card className="shadow-[var(--shadow-card)]">

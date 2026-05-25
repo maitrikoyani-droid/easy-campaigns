@@ -72,6 +72,7 @@ export type Database = {
       }
       campaigns: {
         Row: {
+          attachments: Json
           batch_delay_seconds: number
           batch_size: number
           click_count: number
@@ -95,6 +96,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          attachments?: Json
           batch_delay_seconds?: number
           batch_size?: number
           click_count?: number
@@ -118,6 +120,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          attachments?: Json
           batch_delay_seconds?: number
           batch_size?: number
           click_count?: number

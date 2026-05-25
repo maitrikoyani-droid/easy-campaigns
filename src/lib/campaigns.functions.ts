@@ -39,6 +39,13 @@ export const checkSpamWords = createServerFn({ method: "POST" })
     return { hits, score: hits.length };
   });
 
+const attachmentSchema = z.object({
+  path: z.string().min(1).max(500),
+  filename: z.string().min(1).max(255),
+  size: z.number().int().min(0).max(25 * 1024 * 1024),
+  contentType: z.string().max(120).optional().nullable(),
+});
+
 const createSchema = z.object({
   name: z.string().min(1).max(160),
   subject: z.string().min(1).max(255),
@@ -51,6 +58,7 @@ const createSchema = z.object({
   scheduled_at: z.string().optional().nullable(),
   timezone: z.string().max(60).optional().nullable(),
   send_now: z.boolean().default(false),
+  attachments: z.array(attachmentSchema).max(20).default([]),
 });
 
 export const createCampaign = createServerFn({ method: "POST" })
@@ -80,6 +88,7 @@ export const createCampaign = createServerFn({ method: "POST" })
       timezone: data.timezone || "UTC",
       status,
       total_recipients: recipients.length,
+      attachments: data.attachments ?? [],
     }).select("id").single();
     if (error || !c) throw new Error(error?.message || "Failed");
 
