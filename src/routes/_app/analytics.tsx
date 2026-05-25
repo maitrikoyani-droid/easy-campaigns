@@ -22,36 +22,37 @@ function Analytics() {
       <div className="mt-8 space-y-3">
         {items.length === 0 && <Card><CardContent className="py-12 text-center text-muted-foreground">No campaigns yet.</CardContent></Card>}
         {items.map((c: any) => (
-          <Card key={c.id} className="shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-elevated)]">
-            <CardContent className="py-5">
-              <div className="flex items-center justify-between gap-3">
-                <Link to="/analytics/$id" params={{ id: c.id }} className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="truncate font-medium hover:text-primary">{c.name}</h3>
-                    <Badge variant="secondary">{c.status}</Badge>
+          <Link key={c.id} to="/analytics/$id" params={{ id: c.id }} className="block">
+            <Card className="shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-elevated)] cursor-pointer">
+              <CardContent className="py-5">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="truncate font-medium">{c.name}</h3>
+                      <Badge variant="secondary">{c.status}</Badge>
+                    </div>
+                    <p className="truncate text-sm text-muted-foreground">{c.subject}</p>
                   </div>
-                  <p className="truncate text-sm text-muted-foreground">{c.subject}</p>
-                </Link>
-                <div className="text-right text-xs text-muted-foreground">{new Date(c.created_at).toLocaleString()}</div>
-                <Link to="/analytics/$id" params={{ id: c.id }}>
+                  <div className="text-right text-xs text-muted-foreground">{new Date(c.created_at).toLocaleString()}</div>
                   <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                </Link>
-              </div>
-              <div className="mt-4 grid grid-cols-4 gap-3 text-center">
-                {[
-                  ["Sent", `${c.sent_count}/${c.total_recipients}`],
-                  ["Opens", `${c.open_count} (${pct(c.open_count, c.sent_count)}%)`],
-                  ["Clicks", `${c.click_count} (${pct(c.click_count, c.sent_count)}%)`],
-                  ["Failed", String(c.failed_count)],
-                ].map(([l, v]) => (
-                  <div key={l} className="rounded-lg bg-accent/40 p-3">
-                    <div className="text-xs text-muted-foreground">{l}</div>
-                    <div className="font-display text-lg font-semibold">{v}</div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                </div>
+                <div className="mt-4 grid grid-cols-4 gap-3 text-center">
+                  {[
+                    ["Sent", `${c.sent_count}/${c.total_recipients}`],
+                    ["Opens", `${c.open_count} (${pct(c.open_count, c.sent_count)}%)`],
+                    ["Clicks", `${c.click_count} (${pct(c.click_count, c.sent_count)}%)`],
+                    ["Failed", String(c.failed_count)],
+                  ].map(([l, v]) => (
+                    <div key={l} className="rounded-lg bg-accent/40 p-3">
+                      <div className="text-xs text-muted-foreground">{l}</div>
+                      <div className="font-display text-lg font-semibold">{v}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-3 text-xs text-primary">View per-recipient details →</div>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
     </div>
