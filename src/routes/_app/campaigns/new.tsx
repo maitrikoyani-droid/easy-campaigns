@@ -182,9 +182,69 @@ function NewCampaign() {
                   </div>
                 </div>
               )}
+
+              <div>
+                <div className="mb-2 flex items-center justify-between">
+                  <Label className="flex items-center gap-2"><Paperclip className="h-4 w-4" /> Attachments</Label>
+                  <span className="text-xs text-muted-foreground">PDF, DOC, XLS, PPT, TXT, ZIP, PNG/JPG · 25MB each</span>
+                </div>
+                <div
+                  onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={(e) => {
+                    e.preventDefault(); setDragOver(false);
+                    if (e.dataTransfer.files?.length) handleFiles(e.dataTransfer.files);
+                  }}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-center transition ${dragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-muted/50"}`}
+                >
+                  <Upload className="h-6 w-6 text-muted-foreground" />
+                  <div className="text-sm"><span className="font-medium text-foreground">Click to upload</span> or drag and drop</div>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  className="hidden"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.png,.jpg,.jpeg"
+                  onChange={(e) => { if (e.target.files) handleFiles(e.target.files); e.currentTarget.value = ""; }}
+                />
+
+                {(atts.length > 0 || Object.keys(uploads).length > 0) && (
+                  <ul className="mt-3 space-y-2">
+                    {Object.entries(uploads).map(([k, u]) => (
+                      <li key={k} className="rounded-md border border-border bg-muted/30 p-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="truncate">{u.name}</span>
+                          <span className="text-muted-foreground">{u.error ? "Failed" : `${u.progress}%`}</span>
+                        </div>
+                        <Progress value={u.progress} className="mt-1 h-1" />
+                      </li>
+                    ))}
+                    {atts.map((a) => {
+                      const Icon = iconFor(a.filename);
+                      return (
+                        <li key={a.path} className="flex items-center justify-between rounded-md border border-border bg-card p-2">
+                          <div className="flex min-w-0 items-center gap-2">
+                            <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                            <div className="min-w-0">
+                              <div className="truncate text-sm">{a.filename}</div>
+                              <div className="text-xs text-muted-foreground">{fmtSize(a.size)}</div>
+                            </div>
+                          </div>
+                          <Button type="button" variant="ghost" size="sm" onClick={() => removeAtt(a)}>
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
+
 
         <div className="space-y-6">
           <Card className="shadow-[var(--shadow-card)]">
