@@ -88,6 +88,7 @@ export const createCampaign = createServerFn({ method: "POST" })
       timezone: data.timezone || "UTC",
       status,
       total_recipients: recipients.length,
+      attachments: data.attachments ?? [],
     }).select("id").single();
     if (error || !c) throw new Error(error?.message || "Failed");
 
