@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,10 +10,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Progress } from "@/components/ui/progress";
 import { listLists } from "@/lib/lists.functions";
 import { listTemplates } from "@/lib/templates.functions";
 import { createCampaign, checkSpamWords } from "@/lib/campaigns.functions";
-import { AlertTriangle, Send, CalendarClock, Eye } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { AlertTriangle, Send, CalendarClock, Eye, Paperclip, Upload, X, FileText, FileSpreadsheet, FileArchive, Image as ImageIcon, File as FileIcon } from "lucide-react";
 
 export const Route = createFileRoute("/_app/campaigns/new")({ component: NewCampaign });
 
