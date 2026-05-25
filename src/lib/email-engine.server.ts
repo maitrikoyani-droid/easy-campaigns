@@ -80,7 +80,7 @@ export async function sendCampaignBatch(campaignId: string) {
   const replyTo = campaign.reply_to || smtp.from_email;
 
   // Pre-load attachments once per batch
-  const attachmentMeta = Array.isArray(campaign.attachments) ? campaign.attachments : [];
+  const attachmentMeta = (Array.isArray(campaign.attachments) ? campaign.attachments : []) as Array<{ path: string; filename: string; contentType?: string | null }>;
   const attachments: Array<{ filename: string; content: Buffer; contentType?: string }> = [];
   for (const a of attachmentMeta) {
     try {
