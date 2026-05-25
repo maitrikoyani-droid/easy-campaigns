@@ -102,6 +102,22 @@ function NewCampaign() {
   });
 
   const fmtSize = (b: number) => b < 1024 ? `${b} B` : b < 1024 * 1024 ? `${(b / 1024).toFixed(1)} KB` : `${(b / 1024 / 1024).toFixed(2)} MB`;
+
+  useEffect(() => {
+    const id = setTimeout(async () => {
+      if (!form.subject && !form.html) return;
+      try {
+        const res = await fnSpam({ data: { text: `${form.subject}\n${form.html}` } });
+        setSpam(res.hits);
+      } catch {}
+    }, 500);
+    return () => clearTimeout(id);
+  }, [form.subject, form.html]);
+
+  const useTemplate = (id: string) => {
+    const t = templates.find((x: any) => x.id === id);
+    if (t) setForm((f) => ({ ...f, subject: t.subject || f.subject, html: t.html || f.html, name: f.name || t.name }));
+  };
   const iconFor = (name: string) => {
     const ext = (name.split(".").pop() || "").toLowerCase();
     if (["png", "jpg", "jpeg"].includes(ext)) return ImageIcon;
