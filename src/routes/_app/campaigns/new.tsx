@@ -38,20 +38,51 @@ function NewCampaign() {
   const [spam, setSpam] = useState<string[]>([]);
   const [preview, setPreview] = useState(false);
 
-  useEffect(() => {
-    const id = setTimeout(async () => {
-      if (!form.subject && !form.html) return;
-      try {
-        const res = await fnSpam({ data: { text: `${form.subject}\n${form.html}` } });
-        setSpam(res.hits);
-      } catch {}
-    }, 500);
-    return () => clearTimeout(id);
-  }, [form.subject, form.html]);
+  type Att = { path: string; filename: string; size: number; contentType?: string | null };
+  const [atts, setAtts] = useState<Att[]>([]);
+  const [uploads, setUploads] = useState<Record<string, { name: string; progress: number; error?: string }>>({});
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const useTemplate = (id: string) => {
-    const t = templates.find((x: any) => x.id === id);
-    if (t) setForm((f) => ({ ...f, subject: t.subject || f.subject, html: t.html || f.html, name: f.name || t.name }));
+  const ALLOWED = useMemo(() => new Set([
+    "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "zip", "png", "jpg", "jpeg",
+  ]), []);
+  const MAX_FILE = 25 * 1024 * 1024;
+
+  const handleFiles = async (files: FileList | File[]) => {
+    const list = Array.from(files);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { toast.error("Not signed in"); return; }
+    for (const file of list) {
+      const ext = (file.name.split(".").pop() || "").toLowerCase();
+      if (!ALLOWED.has(ext)) { toast.error(`${file.name}: file type not allowed`); continue; }
+      if (file.size > MAX_FILE) { toast.error(`${file.name}: exceeds 25MB`); continue; }
+      const key = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const path = `${user.id}/drafts/${key}-${file.name}`;
+      setUploads((u) => ({ ...u, [key]: { name: file.name, progress: 10 } }));
+      try {
+        // simulate progress while upload runs (supabase-js has no native progress)
+        const tick = setInterval(() => {
+          setUploads((u) => u[key] ? { ...u, [key]: { ...u[key], progress: Math.min(90, u[key].progress + 10) } } : u);
+        }, 150);
+        const { error } = await supabase.storage.from("attachments").upload(path, file, {
+          contentType: file.type || undefined, upsert: false,
+        });
+        clearInterval(tick);
+        if (error) throw error;
+        setUploads((u) => ({ ...u, [key]: { ...u[key], progress: 100 } }));
+        setAtts((a) => [...a, { path, filename: file.name, size: file.size, contentType: file.type || null }]);
+        setTimeout(() => setUploads((u) => { const n = { ...u }; delete n[key]; return n; }), 600);
+      } catch (e: any) {
+        setUploads((u) => ({ ...u, [key]: { ...u[key], progress: 0, error: e.message || "upload failed" } }));
+        toast.error(`${file.name}: ${e.message || "upload failed"}`);
+      }
+    }
+  };
+
+  const removeAtt = async (a: Att) => {
+    setAtts((arr) => arr.filter((x) => x.path !== a.path));
+    try { await supabase.storage.from("attachments").remove([a.path]); } catch {}
   };
 
   const create = useMutation({
@@ -60,6 +91,7 @@ function NewCampaign() {
         ...form,
         scheduled_at: mode === "later" && form.scheduled_at ? new Date(form.scheduled_at).toISOString() : null,
         send_now: mode === "now",
+        attachments: atts,
       },
     }),
     onSuccess: (r) => {
@@ -68,6 +100,16 @@ function NewCampaign() {
     },
     onError: (e: any) => toast.error(e.message),
   });
+
+  const fmtSize = (b: number) => b < 1024 ? `${b} B` : b < 1024 * 1024 ? `${(b / 1024).toFixed(1)} KB` : `${(b / 1024 / 1024).toFixed(2)} MB`;
+  const iconFor = (name: string) => {
+    const ext = (name.split(".").pop() || "").toLowerCase();
+    if (["png", "jpg", "jpeg"].includes(ext)) return ImageIcon;
+    if (["xls", "xlsx"].includes(ext)) return FileSpreadsheet;
+    if (ext === "zip") return FileArchive;
+    if (["pdf", "doc", "docx", "ppt", "pptx", "txt"].includes(ext)) return FileText;
+    return FileIcon;
+  };
 
   const previewHtml = form.html
     .replace(/\{\{\s*name\s*\}\}/g, "Alex")
