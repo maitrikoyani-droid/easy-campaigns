@@ -5,9 +5,10 @@ import { useMemo, useState } from "react";
 import { getCampaignAnalytics } from "@/lib/campaigns.functions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { ArrowLeft, Eye, MousePointerClick, Check, X } from "lucide-react";
+import { ArrowLeft, Eye, MousePointerClick, Check, X, RefreshCw, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/_app/analytics/$id")({ component: CampaignAnalytics });
 
@@ -23,7 +24,11 @@ function StatusBadge({ status }: { status: string }) {
 function CampaignAnalytics() {
   const { id } = Route.useParams();
   const fn = useServerFn(getCampaignAnalytics);
-  const { data } = useQuery({ queryKey: ["campaign-analytics", id], queryFn: () => fn({ data: { id } }) });
+  const { data, refetch, isFetching, isLoading } = useQuery({
+    queryKey: ["campaign-analytics", id],
+    queryFn: () => fn({ data: { id } }),
+    refetchInterval: 15000,
+  });
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const campaign = data?.campaign;
@@ -41,9 +46,14 @@ function CampaignAnalytics() {
         <ArrowLeft className="mr-1 h-4 w-4" /> All campaigns
       </Link>
 
-      <div className="mt-4">
-        <h1 className="font-display text-3xl font-bold">{campaign?.name ?? "Campaign"}</h1>
-        <p className="text-sm text-muted-foreground">{campaign?.subject}</p>
+      <div className="mt-4 flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="font-display text-3xl font-bold truncate">{campaign?.name ?? "Campaign"}</h1>
+          <p className="text-sm text-muted-foreground truncate">{campaign?.subject}</p>
+        </div>
+        <Button variant="outline" onClick={() => refetch()} disabled={isFetching}>
+          <RefreshCw className={`mr-1 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} /> Refresh
+        </Button>
       </div>
 
       <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -75,7 +85,9 @@ function CampaignAnalytics() {
             </TableHeader>
             <TableBody>
               {recipients.length === 0 && (
-                <TableRow><TableCell colSpan={6} className="py-10 text-center text-muted-foreground">No recipients yet.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
+                  {isLoading ? <span className="inline-flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Loading recipients…</span> : "No recipients yet."}
+                </TableCell></TableRow>
               )}
               {recipients.map((r: any) => {
                 const last = events.find((e: any) => e.campaign_recipient_id === r.id);
