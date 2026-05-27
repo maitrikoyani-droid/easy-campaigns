@@ -19,6 +19,7 @@ import { Route as AppScheduledRouteImport } from './routes/_app/scheduled'
 import { Route as AppListsRouteImport } from './routes/_app/lists'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppAnalyticsRouteImport } from './routes/_app/analytics'
+import { Route as AppAnalyticsIndexRouteImport } from './routes/_app/analytics.index'
 import { Route as AppListsIdRouteImport } from './routes/_app/lists.$id'
 import { Route as AppCampaignsNewRouteImport } from './routes/_app/campaigns/new'
 import { Route as AppAnalyticsIdRouteImport } from './routes/_app/analytics.$id'
@@ -75,6 +76,11 @@ const AppAnalyticsRoute = AppAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAnalyticsIndexRoute = AppAnalyticsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppAnalyticsRoute,
+} as any)
 const AppListsIdRoute = AppListsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/analytics/$id': typeof AppAnalyticsIdRoute
   '/campaigns/new': typeof AppCampaignsNewRoute
   '/lists/$id': typeof AppListsIdRoute
+  '/analytics/': typeof AppAnalyticsIndexRoute
   '/api/public/hooks/process-campaigns': typeof ApiPublicHooksProcessCampaignsRoute
   '/api/public/track/click': typeof ApiPublicTrackClickRoute
   '/api/public/track/open/$id': typeof ApiPublicTrackOpenIdRoute
@@ -128,7 +135,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/analytics': typeof AppAnalyticsRouteWithChildren
   '/dashboard': typeof AppDashboardRoute
   '/lists': typeof AppListsRouteWithChildren
   '/scheduled': typeof AppScheduledRoute
@@ -137,6 +143,7 @@ export interface FileRoutesByTo {
   '/analytics/$id': typeof AppAnalyticsIdRoute
   '/campaigns/new': typeof AppCampaignsNewRoute
   '/lists/$id': typeof AppListsIdRoute
+  '/analytics': typeof AppAnalyticsIndexRoute
   '/api/public/hooks/process-campaigns': typeof ApiPublicHooksProcessCampaignsRoute
   '/api/public/track/click': typeof ApiPublicTrackClickRoute
   '/api/public/track/open/$id': typeof ApiPublicTrackOpenIdRoute
@@ -156,6 +163,7 @@ export interface FileRoutesById {
   '/_app/analytics/$id': typeof AppAnalyticsIdRoute
   '/_app/campaigns/new': typeof AppCampaignsNewRoute
   '/_app/lists/$id': typeof AppListsIdRoute
+  '/_app/analytics/': typeof AppAnalyticsIndexRoute
   '/api/public/hooks/process-campaigns': typeof ApiPublicHooksProcessCampaignsRoute
   '/api/public/track/click': typeof ApiPublicTrackClickRoute
   '/api/public/track/open/$id': typeof ApiPublicTrackOpenIdRoute
@@ -175,6 +183,7 @@ export interface FileRouteTypes {
     | '/analytics/$id'
     | '/campaigns/new'
     | '/lists/$id'
+    | '/analytics/'
     | '/api/public/hooks/process-campaigns'
     | '/api/public/track/click'
     | '/api/public/track/open/$id'
@@ -183,7 +192,6 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/signup'
-    | '/analytics'
     | '/dashboard'
     | '/lists'
     | '/scheduled'
@@ -192,6 +200,7 @@ export interface FileRouteTypes {
     | '/analytics/$id'
     | '/campaigns/new'
     | '/lists/$id'
+    | '/analytics'
     | '/api/public/hooks/process-campaigns'
     | '/api/public/track/click'
     | '/api/public/track/open/$id'
@@ -210,6 +219,7 @@ export interface FileRouteTypes {
     | '/_app/analytics/$id'
     | '/_app/campaigns/new'
     | '/_app/lists/$id'
+    | '/_app/analytics/'
     | '/api/public/hooks/process-campaigns'
     | '/api/public/track/click'
     | '/api/public/track/open/$id'
@@ -297,6 +307,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAnalyticsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/analytics/': {
+      id: '/_app/analytics/'
+      path: '/'
+      fullPath: '/analytics/'
+      preLoaderRoute: typeof AppAnalyticsIndexRouteImport
+      parentRoute: typeof AppAnalyticsRoute
+    }
     '/_app/lists/$id': {
       id: '/_app/lists/$id'
       path: '/$id'
@@ -344,10 +361,12 @@ declare module '@tanstack/react-router' {
 
 interface AppAnalyticsRouteChildren {
   AppAnalyticsIdRoute: typeof AppAnalyticsIdRoute
+  AppAnalyticsIndexRoute: typeof AppAnalyticsIndexRoute
 }
 
 const AppAnalyticsRouteChildren: AppAnalyticsRouteChildren = {
   AppAnalyticsIdRoute: AppAnalyticsIdRoute,
+  AppAnalyticsIndexRoute: AppAnalyticsIndexRoute,
 }
 
 const AppAnalyticsRouteWithChildren = AppAnalyticsRoute._addFileChildren(

@@ -4,10 +4,28 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
+async function waitForSession() {
+  const { data } = await supabase.auth.getSession();
+  if (data.session) return data.session;
+  return new Promise<any>((resolve) => {
+    const sub = supabase.auth.onAuthStateChange((_e, s) => {
+      if (s) {
+        clearTimeout(timer);
+        sub.data.subscription.unsubscribe();
+        resolve(s);
+      }
+    });
+    const timer = setTimeout(() => {
+      sub.data.subscription.unsubscribe();
+      resolve(null);
+    }, 1500);
+  });
+}
+
 export const Route = createFileRoute("/_app")({
   beforeLoad: async () => {
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) throw redirect({ to: "/login" });
+    const session = await waitForSession();
+    if (!session) throw redirect({ to: "/login" });
   },
   component: AppLayout,
 });

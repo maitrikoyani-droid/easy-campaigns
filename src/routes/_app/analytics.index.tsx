@@ -1,0 +1,72 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { listCampaigns } from "@/lib/campaigns.functions";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, RefreshCw } from "lucide-react";
+
+export const Route = createFileRoute("/_app/analytics/")({ component: Analytics });
+
+function pct(n: number, d: number) { return d > 0 ? Math.round((n / d) * 100) : 0; }
+
+function Analytics() {
+  const fn = useServerFn(listCampaigns);
+  const { data: items = [], refetch, isFetching } = useQuery({
+    queryKey: ["campaigns"],
+    queryFn: () => fn(),
+    refetchInterval: 30000,
+  });
+
+  return (
+    <div className="mx-auto max-w-6xl p-6 md:p-10">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl font-bold">Analytics</h1>
+          <p className="text-sm text-muted-foreground">Open and click performance per campaign.</p>
+        </div>
+        <Button variant="outline" onClick={() => refetch()} disabled={isFetching}>
+          <RefreshCw className={`mr-1 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} /> Refresh
+        </Button>
+      </div>
+
+      <div className="mt-8 space-y-3">
+        {items.length === 0 && <Card><CardContent className="py-12 text-center text-muted-foreground">No campaigns yet.</CardContent></Card>}
+        {items.map((c: any) => (
+          <Link key={c.id} to="/analytics/$id" params={{ id: c.id }} className="block">
+            <Card className="shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-elevated)] cursor-pointer">
+              <CardContent className="py-5">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="truncate font-medium">{c.name}</h3>
+                      <Badge variant="secondary">{c.status}</Badge>
+                    </div>
+                    <p className="truncate text-sm text-muted-foreground">{c.subject}</p>
+                  </div>
+                  <div className="text-right text-xs text-muted-foreground">{new Date(c.created_at).toLocaleString()}</div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div className="mt-4 grid grid-cols-4 gap-3 text-center">
+                  {[
+                    ["Sent", `${c.sent_count}/${c.total_recipients}`],
+                    ["Opens", `${c.open_count} (${pct(c.open_count, c.sent_count)}%)`],
+                    ["Clicks", `${c.click_count} (${pct(c.click_count, c.sent_count)}%)`],
+                    ["Failed", String(c.failed_count)],
+                  ].map(([l, v]) => (
+                    <div key={l} className="rounded-lg bg-accent/40 p-3">
+                      <div className="text-xs text-muted-foreground">{l}</div>
+                      <div className="font-display text-lg font-semibold">{v}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-3 text-xs text-primary">View per-recipient details →</div>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
