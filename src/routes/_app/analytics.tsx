@@ -4,7 +4,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { listCampaigns } from "@/lib/campaigns.functions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, RefreshCw } from "lucide-react";
 
 export const Route = createFileRoute("/_app/analytics")({ component: Analytics });
 
@@ -12,12 +13,23 @@ function pct(n: number, d: number) { return d > 0 ? Math.round((n / d) * 100) : 
 
 function Analytics() {
   const fn = useServerFn(listCampaigns);
-  const { data: items = [] } = useQuery({ queryKey: ["campaigns"], queryFn: () => fn() });
+  const { data: items = [], refetch, isFetching } = useQuery({
+    queryKey: ["campaigns"],
+    queryFn: () => fn(),
+    refetchInterval: 30000,
+  });
 
   return (
     <div className="mx-auto max-w-6xl p-6 md:p-10">
-      <h1 className="font-display text-3xl font-bold">Analytics</h1>
-      <p className="text-sm text-muted-foreground">Open and click performance per campaign.</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl font-bold">Analytics</h1>
+          <p className="text-sm text-muted-foreground">Open and click performance per campaign.</p>
+        </div>
+        <Button variant="outline" onClick={() => refetch()} disabled={isFetching}>
+          <RefreshCw className={`mr-1 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} /> Refresh
+        </Button>
+      </div>
 
       <div className="mt-8 space-y-3">
         {items.length === 0 && <Card><CardContent className="py-12 text-center text-muted-foreground">No campaigns yet.</CardContent></Card>}
