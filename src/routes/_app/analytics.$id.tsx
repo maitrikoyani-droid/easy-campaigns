@@ -5,9 +5,10 @@ import { useMemo, useState } from "react";
 import { getCampaignAnalytics } from "@/lib/campaigns.functions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { ArrowLeft, Eye, MousePointerClick, Check, X } from "lucide-react";
+import { ArrowLeft, Eye, MousePointerClick, Check, X, RefreshCw, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/_app/analytics/$id")({ component: CampaignAnalytics });
 
