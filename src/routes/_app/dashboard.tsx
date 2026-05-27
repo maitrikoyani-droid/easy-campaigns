@@ -27,7 +27,7 @@ function Stat({ icon: Icon, label, value, tone = "default" }: { icon: any; label
 
 function Dashboard() {
   const fn = useServerFn(getDashboardStats);
-  const { data } = useQuery({ queryKey: ["dashboard-stats"], queryFn: () => fn() });
+  const { data, refetch, isFetching } = useQuery({ queryKey: ["dashboard-stats"], queryFn: () => fn() });
   const s = data ?? { sent: 0, delivered: 0, opens: 0, clicks: 0, failed: 0, campaigns: 0 };
 
   return (
@@ -37,7 +37,12 @@ function Dashboard() {
           <h1 className="font-display text-3xl font-bold">Dashboard</h1>
           <p className="text-sm text-muted-foreground">Overview of your email activity</p>
         </div>
-        <Link to="/campaigns/new"><Button><Plus className="mr-1 h-4 w-4" /> New campaign</Button></Link>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => refetch()} disabled={isFetching}>
+            <RefreshCw className={`mr-1 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} /> Refresh
+          </Button>
+          <Link to="/campaigns/new"><Button><Plus className="mr-1 h-4 w-4" /> New campaign</Button></Link>
+        </div>
       </div>
 
       <div className="mt-8 grid gap-4 md:grid-cols-3 lg:grid-cols-5">
