@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, RefreshCw } from "lucide-react";
 
-export const Route = createFileRoute("/_app/analytics")({ component: Analytics });
+export const Route = createFileRoute("/_app/analytics/")({ component: Analytics });
 
 function pct(n: number, d: number) { return d > 0 ? Math.round((n / d) * 100) : 0; }
 
