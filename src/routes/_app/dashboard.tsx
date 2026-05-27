@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Mail, Send, MousePointerClick, Eye, XCircle, Plus } from "lucide-react";
+import { Mail, Send, MousePointerClick, Eye, XCircle, Plus, RefreshCw } from "lucide-react";
 import { getDashboardStats } from "@/lib/campaigns.functions";
 import { Button } from "@/components/ui/button";
 
