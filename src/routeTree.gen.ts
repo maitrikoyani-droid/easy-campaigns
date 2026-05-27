@@ -18,7 +18,7 @@ import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppScheduledRouteImport } from './routes/_app/scheduled'
 import { Route as AppListsRouteImport } from './routes/_app/lists'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
-import { Route as AppAnalyticsRouteImport } from './routes/_app/analytics'
+import { Route as AppAnalyticsIndexRouteImport } from './routes/_app/analytics.index'
 import { Route as AppListsIdRouteImport } from './routes/_app/lists.$id'
 import { Route as AppCampaignsNewRouteImport } from './routes/_app/campaigns/new'
 import { Route as AppAnalyticsIdRouteImport } from './routes/_app/analytics.$id'
@@ -70,9 +70,9 @@ const AppDashboardRoute = AppDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AppRoute,
 } as any)
-const AppAnalyticsRoute = AppAnalyticsRouteImport.update({
-  id: '/analytics',
-  path: '/analytics',
+const AppAnalyticsIndexRoute = AppAnalyticsIndexRouteImport.update({
+  id: '/analytics/',
+  path: '/analytics/',
   getParentRoute: () => AppRoute,
 } as any)
 const AppListsIdRoute = AppListsIdRouteImport.update({
@@ -86,9 +86,9 @@ const AppCampaignsNewRoute = AppCampaignsNewRouteImport.update({
   getParentRoute: () => AppRoute,
 } as any)
 const AppAnalyticsIdRoute = AppAnalyticsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AppAnalyticsRoute,
+  id: '/analytics/$id',
+  path: '/analytics/$id',
+  getParentRoute: () => AppRoute,
 } as any)
 const ApiPublicTrackClickRoute = ApiPublicTrackClickRouteImport.update({
   id: '/api/public/track/click',
@@ -111,7 +111,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/analytics': typeof AppAnalyticsRouteWithChildren
   '/dashboard': typeof AppDashboardRoute
   '/lists': typeof AppListsRouteWithChildren
   '/scheduled': typeof AppScheduledRoute
@@ -120,6 +119,7 @@ export interface FileRoutesByFullPath {
   '/analytics/$id': typeof AppAnalyticsIdRoute
   '/campaigns/new': typeof AppCampaignsNewRoute
   '/lists/$id': typeof AppListsIdRoute
+  '/analytics/': typeof AppAnalyticsIndexRoute
   '/api/public/hooks/process-campaigns': typeof ApiPublicHooksProcessCampaignsRoute
   '/api/public/track/click': typeof ApiPublicTrackClickRoute
   '/api/public/track/open/$id': typeof ApiPublicTrackOpenIdRoute
@@ -128,7 +128,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/analytics': typeof AppAnalyticsRouteWithChildren
   '/dashboard': typeof AppDashboardRoute
   '/lists': typeof AppListsRouteWithChildren
   '/scheduled': typeof AppScheduledRoute
@@ -137,6 +136,7 @@ export interface FileRoutesByTo {
   '/analytics/$id': typeof AppAnalyticsIdRoute
   '/campaigns/new': typeof AppCampaignsNewRoute
   '/lists/$id': typeof AppListsIdRoute
+  '/analytics': typeof AppAnalyticsIndexRoute
   '/api/public/hooks/process-campaigns': typeof ApiPublicHooksProcessCampaignsRoute
   '/api/public/track/click': typeof ApiPublicTrackClickRoute
   '/api/public/track/open/$id': typeof ApiPublicTrackOpenIdRoute
@@ -147,7 +147,6 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/_app/analytics': typeof AppAnalyticsRouteWithChildren
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/lists': typeof AppListsRouteWithChildren
   '/_app/scheduled': typeof AppScheduledRoute
@@ -156,6 +155,7 @@ export interface FileRoutesById {
   '/_app/analytics/$id': typeof AppAnalyticsIdRoute
   '/_app/campaigns/new': typeof AppCampaignsNewRoute
   '/_app/lists/$id': typeof AppListsIdRoute
+  '/_app/analytics/': typeof AppAnalyticsIndexRoute
   '/api/public/hooks/process-campaigns': typeof ApiPublicHooksProcessCampaignsRoute
   '/api/public/track/click': typeof ApiPublicTrackClickRoute
   '/api/public/track/open/$id': typeof ApiPublicTrackOpenIdRoute
@@ -166,7 +166,6 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/signup'
-    | '/analytics'
     | '/dashboard'
     | '/lists'
     | '/scheduled'
@@ -175,6 +174,7 @@ export interface FileRouteTypes {
     | '/analytics/$id'
     | '/campaigns/new'
     | '/lists/$id'
+    | '/analytics/'
     | '/api/public/hooks/process-campaigns'
     | '/api/public/track/click'
     | '/api/public/track/open/$id'
@@ -183,7 +183,6 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/signup'
-    | '/analytics'
     | '/dashboard'
     | '/lists'
     | '/scheduled'
@@ -192,6 +191,7 @@ export interface FileRouteTypes {
     | '/analytics/$id'
     | '/campaigns/new'
     | '/lists/$id'
+    | '/analytics'
     | '/api/public/hooks/process-campaigns'
     | '/api/public/track/click'
     | '/api/public/track/open/$id'
@@ -201,7 +201,6 @@ export interface FileRouteTypes {
     | '/_app'
     | '/login'
     | '/signup'
-    | '/_app/analytics'
     | '/_app/dashboard'
     | '/_app/lists'
     | '/_app/scheduled'
@@ -210,6 +209,7 @@ export interface FileRouteTypes {
     | '/_app/analytics/$id'
     | '/_app/campaigns/new'
     | '/_app/lists/$id'
+    | '/_app/analytics/'
     | '/api/public/hooks/process-campaigns'
     | '/api/public/track/click'
     | '/api/public/track/open/$id'
@@ -290,11 +290,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/analytics': {
-      id: '/_app/analytics'
+    '/_app/analytics/': {
+      id: '/_app/analytics/'
       path: '/analytics'
-      fullPath: '/analytics'
-      preLoaderRoute: typeof AppAnalyticsRouteImport
+      fullPath: '/analytics/'
+      preLoaderRoute: typeof AppAnalyticsIndexRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/lists/$id': {
@@ -313,10 +313,10 @@ declare module '@tanstack/react-router' {
     }
     '/_app/analytics/$id': {
       id: '/_app/analytics/$id'
-      path: '/$id'
+      path: '/analytics/$id'
       fullPath: '/analytics/$id'
       preLoaderRoute: typeof AppAnalyticsIdRouteImport
-      parentRoute: typeof AppAnalyticsRoute
+      parentRoute: typeof AppRoute
     }
     '/api/public/track/click': {
       id: '/api/public/track/click'
@@ -342,18 +342,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AppAnalyticsRouteChildren {
-  AppAnalyticsIdRoute: typeof AppAnalyticsIdRoute
-}
-
-const AppAnalyticsRouteChildren: AppAnalyticsRouteChildren = {
-  AppAnalyticsIdRoute: AppAnalyticsIdRoute,
-}
-
-const AppAnalyticsRouteWithChildren = AppAnalyticsRoute._addFileChildren(
-  AppAnalyticsRouteChildren,
-)
-
 interface AppListsRouteChildren {
   AppListsIdRoute: typeof AppListsIdRoute
 }
@@ -367,23 +355,25 @@ const AppListsRouteWithChildren = AppListsRoute._addFileChildren(
 )
 
 interface AppRouteChildren {
-  AppAnalyticsRoute: typeof AppAnalyticsRouteWithChildren
   AppDashboardRoute: typeof AppDashboardRoute
   AppListsRoute: typeof AppListsRouteWithChildren
   AppScheduledRoute: typeof AppScheduledRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppTemplatesRoute: typeof AppTemplatesRoute
+  AppAnalyticsIdRoute: typeof AppAnalyticsIdRoute
   AppCampaignsNewRoute: typeof AppCampaignsNewRoute
+  AppAnalyticsIndexRoute: typeof AppAnalyticsIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppAnalyticsRoute: AppAnalyticsRouteWithChildren,
   AppDashboardRoute: AppDashboardRoute,
   AppListsRoute: AppListsRouteWithChildren,
   AppScheduledRoute: AppScheduledRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppTemplatesRoute: AppTemplatesRoute,
+  AppAnalyticsIdRoute: AppAnalyticsIdRoute,
   AppCampaignsNewRoute: AppCampaignsNewRoute,
+  AppAnalyticsIndexRoute: AppAnalyticsIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -400,3 +390,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
