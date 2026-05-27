@@ -24,7 +24,11 @@ function StatusBadge({ status }: { status: string }) {
 function CampaignAnalytics() {
   const { id } = Route.useParams();
   const fn = useServerFn(getCampaignAnalytics);
-  const { data } = useQuery({ queryKey: ["campaign-analytics", id], queryFn: () => fn({ data: { id } }) });
+  const { data, refetch, isFetching, isLoading } = useQuery({
+    queryKey: ["campaign-analytics", id],
+    queryFn: () => fn({ data: { id } }),
+    refetchInterval: 15000,
+  });
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const campaign = data?.campaign;
@@ -42,9 +46,14 @@ function CampaignAnalytics() {
         <ArrowLeft className="mr-1 h-4 w-4" /> All campaigns
       </Link>
 
-      <div className="mt-4">
-        <h1 className="font-display text-3xl font-bold">{campaign?.name ?? "Campaign"}</h1>
-        <p className="text-sm text-muted-foreground">{campaign?.subject}</p>
+      <div className="mt-4 flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="font-display text-3xl font-bold truncate">{campaign?.name ?? "Campaign"}</h1>
+          <p className="text-sm text-muted-foreground truncate">{campaign?.subject}</p>
+        </div>
+        <Button variant="outline" onClick={() => refetch()} disabled={isFetching}>
+          <RefreshCw className={`mr-1 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} /> Refresh
+        </Button>
       </div>
 
       <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
