@@ -18,6 +18,7 @@ import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppScheduledRouteImport } from './routes/_app/scheduled'
 import { Route as AppListsRouteImport } from './routes/_app/lists'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
+import { Route as AppAnalyticsRouteImport } from './routes/_app/analytics'
 import { Route as AppAnalyticsIndexRouteImport } from './routes/_app/analytics.index'
 import { Route as AppListsIdRouteImport } from './routes/_app/lists.$id'
 import { Route as AppCampaignsNewRouteImport } from './routes/_app/campaigns/new'
@@ -70,10 +71,15 @@ const AppDashboardRoute = AppDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AppRoute,
 } as any)
-const AppAnalyticsIndexRoute = AppAnalyticsIndexRouteImport.update({
-  id: '/analytics/',
-  path: '/analytics/',
+const AppAnalyticsRoute = AppAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
   getParentRoute: () => AppRoute,
+} as any)
+const AppAnalyticsIndexRoute = AppAnalyticsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppAnalyticsRoute,
 } as any)
 const AppListsIdRoute = AppListsIdRouteImport.update({
   id: '/$id',
@@ -86,9 +92,9 @@ const AppCampaignsNewRoute = AppCampaignsNewRouteImport.update({
   getParentRoute: () => AppRoute,
 } as any)
 const AppAnalyticsIdRoute = AppAnalyticsIdRouteImport.update({
-  id: '/analytics/$id',
-  path: '/analytics/$id',
-  getParentRoute: () => AppRoute,
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AppAnalyticsRoute,
 } as any)
 const ApiPublicTrackClickRoute = ApiPublicTrackClickRouteImport.update({
   id: '/api/public/track/click',
@@ -111,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/analytics': typeof AppAnalyticsRouteWithChildren
   '/dashboard': typeof AppDashboardRoute
   '/lists': typeof AppListsRouteWithChildren
   '/scheduled': typeof AppScheduledRoute
@@ -147,6 +154,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/_app/analytics': typeof AppAnalyticsRouteWithChildren
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/lists': typeof AppListsRouteWithChildren
   '/_app/scheduled': typeof AppScheduledRoute
@@ -166,6 +174,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/signup'
+    | '/analytics'
     | '/dashboard'
     | '/lists'
     | '/scheduled'
@@ -201,6 +210,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/login'
     | '/signup'
+    | '/_app/analytics'
     | '/_app/dashboard'
     | '/_app/lists'
     | '/_app/scheduled'
@@ -290,12 +300,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/analytics': {
+      id: '/_app/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AppAnalyticsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/analytics/': {
       id: '/_app/analytics/'
-      path: '/analytics'
+      path: '/'
       fullPath: '/analytics/'
       preLoaderRoute: typeof AppAnalyticsIndexRouteImport
-      parentRoute: typeof AppRoute
+      parentRoute: typeof AppAnalyticsRoute
     }
     '/_app/lists/$id': {
       id: '/_app/lists/$id'
@@ -313,10 +330,10 @@ declare module '@tanstack/react-router' {
     }
     '/_app/analytics/$id': {
       id: '/_app/analytics/$id'
-      path: '/analytics/$id'
+      path: '/$id'
       fullPath: '/analytics/$id'
       preLoaderRoute: typeof AppAnalyticsIdRouteImport
-      parentRoute: typeof AppRoute
+      parentRoute: typeof AppAnalyticsRoute
     }
     '/api/public/track/click': {
       id: '/api/public/track/click'
@@ -342,6 +359,20 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AppAnalyticsRouteChildren {
+  AppAnalyticsIdRoute: typeof AppAnalyticsIdRoute
+  AppAnalyticsIndexRoute: typeof AppAnalyticsIndexRoute
+}
+
+const AppAnalyticsRouteChildren: AppAnalyticsRouteChildren = {
+  AppAnalyticsIdRoute: AppAnalyticsIdRoute,
+  AppAnalyticsIndexRoute: AppAnalyticsIndexRoute,
+}
+
+const AppAnalyticsRouteWithChildren = AppAnalyticsRoute._addFileChildren(
+  AppAnalyticsRouteChildren,
+)
+
 interface AppListsRouteChildren {
   AppListsIdRoute: typeof AppListsIdRoute
 }
@@ -355,25 +386,23 @@ const AppListsRouteWithChildren = AppListsRoute._addFileChildren(
 )
 
 interface AppRouteChildren {
+  AppAnalyticsRoute: typeof AppAnalyticsRouteWithChildren
   AppDashboardRoute: typeof AppDashboardRoute
   AppListsRoute: typeof AppListsRouteWithChildren
   AppScheduledRoute: typeof AppScheduledRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppTemplatesRoute: typeof AppTemplatesRoute
-  AppAnalyticsIdRoute: typeof AppAnalyticsIdRoute
   AppCampaignsNewRoute: typeof AppCampaignsNewRoute
-  AppAnalyticsIndexRoute: typeof AppAnalyticsIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAnalyticsRoute: AppAnalyticsRouteWithChildren,
   AppDashboardRoute: AppDashboardRoute,
   AppListsRoute: AppListsRouteWithChildren,
   AppScheduledRoute: AppScheduledRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppTemplatesRoute: AppTemplatesRoute,
-  AppAnalyticsIdRoute: AppAnalyticsIdRoute,
   AppCampaignsNewRoute: AppCampaignsNewRoute,
-  AppAnalyticsIndexRoute: AppAnalyticsIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
