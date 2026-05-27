@@ -7,19 +7,18 @@ import { toast } from "sonner";
 async function waitForSession() {
   const { data } = await supabase.auth.getSession();
   if (data.session) return data.session;
-  // Session may still be rehydrating from storage on hard refresh — wait briefly.
-  return new Promise<typeof data.session>((resolve) => {
-    const timer = setTimeout(() => {
-      sub.subscription.unsubscribe();
-      resolve(null);
-    }, 1500);
+  return new Promise<any>((resolve) => {
     const sub = supabase.auth.onAuthStateChange((_e, s) => {
       if (s) {
         clearTimeout(timer);
-        sub.subscription.unsubscribe();
+        sub.data.subscription.unsubscribe();
         resolve(s);
       }
     });
+    const timer = setTimeout(() => {
+      sub.data.subscription.unsubscribe();
+      resolve(null);
+    }, 1500);
   });
 }
 
